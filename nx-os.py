@@ -1,6 +1,7 @@
 import xmltodict
 from ncclient import manager
 import json
+import logging
 
 
 def main():
@@ -9,16 +10,17 @@ def main():
     """
 
     connection_params = {
-        "host": "sandbox-nxos-1.cisco.com",
+        "host": "sandbox-iosxe-recomm-1.cisco.com",
         "port": 830,
-        "username": "admin",
-        "password": "Admin_1234!",
+        "username": "developer",
+        "password": "C1sco12345",
         "hostkey_verify": False,
         "allow_agent": False,
         "look_for_keys": False,
-        "device_params": {"name": "nexus"},
+        "device_params": {"name": "iosxe"},
     }
     print("Connection established..1")
+    #logging.basicConfig(level=logging.DEBUG)
     with manager.connect(**connection_params) as this_conn:
         print("Connection established..")
         nc_filter = """
@@ -30,8 +32,10 @@ def main():
            filter=("subtree", nc_filter))
         #print(rpc_obj.xml)
         jresp = xmltodict.parse(rpc_obj.xml)
+        interface_list = []
         for interface in jresp["rpc-reply"]["data"]["interfaces"]["interface"]:
-            if interface["name"] == "eth1/36":
+            if interface["config"]["type"]["#text"] == "ianaift:ethernetCsmacd":
+                interface_list.append(interface)
                 print(json.dumps(interface, indent=2))
         #print(json.dumps(jresp, indent=2))
 
